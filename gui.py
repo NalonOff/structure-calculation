@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, scrolledtext
-# from mes_calculs import *  # Importez vos fonctions ici
+from calculs import bottom_pression, wall_pression
 
 class CalculGUI:
     def __init__(self, root):
@@ -65,6 +65,7 @@ class CalculGUI:
             ("Bau (m)", "bau"),
             ("Tirant d'eau (m)", "draft"),
             ("Inclinaison du fond (°)", "bottomInclination"),
+            ("Altitude de calcul pour les murailles (m)", "wallCalculationAltitude"),
             ("Méthode de calcul", "calculationMethod", "combobox", ["BV", "HYDRO"]),
 
             ("Facteur de securité global", "securityFactor")
@@ -190,10 +191,28 @@ class CalculGUI:
         self.output_text.grid(row=1, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
 
     def get_values(self):
-        """Récupère toutes les valeurs saisies"""
-        base_data = {key: entry.get() for key, entry in self.base_values.items()}
-        fond_data = {key: entry.get() for key, entry in self.fond_values.items()}
-        muraille_data = {key: entry.get() for key, entry in self.muraille_values.items()}
+        """Récupère toutes les valeurs saisies et les convertit en float (sauf combobox)"""
+        def convert_value(widget):
+            """Convertit la valeur du widget en float si c'est un Entry, sinon retourne la chaîne"""
+            value = widget.get()
+
+            # Si c'est un Combobox, retourner la valeur telle quelle (string)
+            if isinstance(widget, ttk.Combobox):
+                return value
+
+            # Si c'est un Entry, tenter de convertir en float
+            if value.strip() == '':
+                return None
+
+            try:
+                return float(value)
+            except ValueError:
+                # Si la conversion échoue, retourner None ou lever une exception
+                raise ValueError(f"Impossible de convertir '{value}' en nombre")
+
+        base_data = {key: convert_value(entry) for key, entry in self.base_values.items()}
+        fond_data = {key: convert_value(entry) for key, entry in self.fond_values.items()}
+        muraille_data = {key: convert_value(entry) for key, entry in self.muraille_values.items()}
 
         return {
             'base': base_data,
@@ -216,14 +235,13 @@ class CalculGUI:
             self.output_text.insert(tk.END, "="*58 + "\n\n")
 
             # BASE
-            self.output_text.insert(tk.END, "--- CALCULS BASE ---\n")
-            for key, value in values['base'].items():
-                if value:
-                    self.output_text.insert(tk.END, f"{key}: {value}\n")
-            # Ajoutez vos calculs ici
-            # resultat_base = ma_fonction_base(values['base'])
-            # self.output_text.insert(tk.END, f"Résultat: {resultat_base}\n")
-            self.output_text.insert(tk.END, "\n")
+            self.output_text.insert(tk.END, "--- CALCULS DES PRESSIONS ---\n")
+
+            bottomPression = bottom_pression(values['base']['calculationMethod'], values['base']['draft'], values['base']['hollow'], values['base']['rho'])
+            wallPression = wall_pression(values['base']['calculationMethod'], bottomPression, values['base']['wallCalculationAltitude'], values['base']['rho'], values['base']['draft'])
+
+            self.output_text.insert(tk.END, f"Les pression considerees sont: Pfond = {bottomPression} Mpa et Pmuraille = {wallPression} MPa")
+            self.output_text.insert(tk.END, "\n\n")
 
             # FOND
             self.output_text.insert(tk.END, "--- CALCULS FOND ---\n")

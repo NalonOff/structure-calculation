@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, scrolledtext
-from calculs import bottom_pression, wall_pression
+from calculs import *
 
 class CalculGUI:
     def __init__(self, root):
@@ -240,16 +240,25 @@ class CalculGUI:
             bottomPression = bottom_pression(values['base']['calculationMethod'], values['base']['draft'], values['base']['hollow'], values['base']['rho'])
             wallPression = wall_pression(values['base']['calculationMethod'], bottomPression, values['base']['wallCalculationAltitude'], values['base']['rho'], values['base']['draft'])
 
-            self.output_text.insert(tk.END, f"Les pression considerees sont: Pfond = {bottomPression} Mpa et Pmuraille = {wallPression} MPa")
+            self.output_text.insert(tk.END, f"Les pression considerées sont: Pfond = {bottomPression} Mpa et Pmuraille = {wallPression} MPa")
             self.output_text.insert(tk.END, "\n\n")
 
-            # FOND
+            # Fond
             self.output_text.insert(tk.END, "--- CALCULS FOND ---\n")
-            for key, value in values['fond'].items():
-                if value:
-                    self.output_text.insert(tk.END, f"{key}: {value}\n")
-            # Ajoutez vos calculs ici
-            self.output_text.insert(tk.END, "\n")
+
+            sigma_adm_tole = sigma(values['fond']['platingRe'], values['base']['securityFactor'])
+            sigma_adm_lisse = sigma(values['fond']['lisseRe'], values['base']['securityFactor'])
+            sigma_adm_varangue = sigma(values['fond']['varangueRe'], values['base']['securityFactor'])
+
+            sheetThickness = sheet_thickness(values['fond']['lisseSpacing'], values['fond']['lisseRange'], bottomPression, sigma_adm_tole)
+
+            self.output_text.insert(tk.END, f"L'épaisseur du bordé est calculé a {round(sheetThickness[0] * 10**3, 1)} mm (coeff de correction de {round(sheetThickness[2], 3)}")
+            self.output_text.insert(tk.END, "\n\n")
+
+
+
+
+
 
             # MURAILLE
             self.output_text.insert(tk.END, "--- CALCULS MURAILLE ---\n")

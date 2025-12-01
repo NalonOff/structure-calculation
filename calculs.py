@@ -1,6 +1,6 @@
-
-
-
+import matplotlib.pyplot as plt
+import numpy as np
+import math
 
 def bottom_pression(calculationMethod, draft, hollow, rho) :
     if calculationMethod == "BV" :
@@ -20,4 +20,20 @@ def wall_pression(calculationMethod, bottomPression, wallCalculationAltitude, rh
         wallPression = 9.81 * rho * (draft - wallCalculationAltitude)
 
     return wallPression
+
+def sigma(Re, secutityFactor):
+    return Re * 10**6 / secutityFactor
+
+def sheet_thickness(lisseSpacing, lisseRange, bottomPression, sigma_adm_tole):
+
+    thickness = math.sqrt(6/10) * lisseSpacing * math.sqrt(bottomPression * 10**3 / sigma_adm_tole)
+
+    if lisseRange <= 3 * lisseSpacing:
+        correctionCoef = min(1.21 * math.sqrt(1 + 0.33 * (lisseSpacing / lisseRange)**2) - 0.69 * (lisseSpacing / lisseRange), 1)
+    else:
+        correctionCoef = 1
+
+    thicknessMin = thickness * correctionCoef
+
+    return thickness, thicknessMin, correctionCoef
 

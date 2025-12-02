@@ -52,7 +52,7 @@ class CalculGUI:
         label.grid(row=row, column=0, columnspan=2, sticky=tk.W, padx=5, pady=(10, 5))
         row += 1
 
-        # Type de lisse (HP ou MS)
+        # Type de raidisseur (HP ou MS)
         type_var = tk.StringVar(value="HP")
         type_frame = ttk.Frame(parent)
         type_frame.grid(row=row, column=0, columnspan=2, padx=5, pady=5, sticky=tk.W)
@@ -237,16 +237,16 @@ class CalculGUI:
 
         row = 0
 
-        # Sélecteur de profil pour les lisses
+        # Sélecteur de profil pour les raidisseurs
         row = self.create_profile_selector(scrollable_frame, row,
-                                           "Type de Lisse:", "lisse", self.fond_values)
+                                           "Type de Raidisseur:", "stiffener", self.fond_values)
 
-        # Champs pour les lisses et autres
+        # Champs pour les raidisseurs et autres
         fields = [
             'separator',
-            ("Portée des lisses (m)", "lisseRange"),
-            ("Espacement des lisses (m)", "lisseSpacing"),
-            ("Re des lisses (Mpa)", "lisseRe"),
+            ("Portée des raidisseurs (m)", "stiffenerRange"),
+            ("Espacement des raidisseurs (m)", "stiffenerSpacing"),
+            ("Re des raidisseurs (Mpa)", "stiffenerRe"),
             'separator',
             ("Portée des varangues (m)", "varangueRange"),
             ("Espacement des varangues (m)", "varangueSpacing"),
@@ -282,9 +282,9 @@ class CalculGUI:
             ("Espacement des varangues (m)", "wallSpacing"),
             ("Re des varangues (Mpa)", "wallRe"),
             'separator',
-            ("Portée des lisses (m)", "lisseRange"),
-            ("Espacement des lisses (m)", "lisseSpacing"),
-            ("Re des liesses (Mpa)", "lisseRe"),
+            ("Portée des raidisseurs (m)", "stiffenerRange"),
+            ("Espacement des raidisseurs (m)", "stiffenerSpacing"),
+            ("Re des raidisseurs (Mpa)", "stiffenerRe"),
             'separator',
             ("Re du bordé (Mpa)", "platingRe")
         ]
@@ -402,14 +402,14 @@ class CalculGUI:
             # FOND
             self.output_text.insert(tk.END, "--- CALCULS FOND ---\n")
 
-            sigma_adm_tole = sigma(values['fond']['platingRe'], values['base']['securityFactor'])
-            sigma_adm_lisse = sigma(values['fond']['lisseRe'], values['base']['securityFactor'])
+            sigma_adm_plating = sigma(values['fond']['platingRe'], values['base']['securityFactor'])
+            sigma_adm_stiffener = sigma(values['fond']['stiffenerRe'], values['base']['securityFactor'])
             sigma_adm_varangue = sigma(values['fond']['varangueRe'], values['base']['securityFactor'])
 
-            sheetThickness = sheet_thickness(values['fond']['lisseSpacing'],
-                                            values['fond']['lisseRange'],
+            sheetThickness = sheet_thickness(values['fond']['stiffenerSpacing'],
+                                            values['fond']['stiffenerRange'],
                                             bottomPression,
-                                            sigma_adm_tole)
+                                            sigma_adm_plating)
 
             self.output_text.insert(tk.END, f"Épaisseur du bordé: {round(sheetThickness[0] * 10**3, 1)} mm (coeff: {round(sheetThickness[2], 3)})")
             self.output_text.insert(tk.END, "\n\n")
